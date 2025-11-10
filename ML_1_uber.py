@@ -1,4 +1,4 @@
-import pandas as pd, numpy as np
+import pandas as pd, numpy as np ,seaborn as sns , matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
@@ -68,10 +68,11 @@ print(f"📌 Final rows after cleaning: {len(df):,}\n")
 # --- 3) Correlation ---
 feat = ["dist_km","hour","dow","passenger_count",
         "pickup_latitude","pickup_longitude","dropoff_latitude","dropoff_longitude"]
+corr = df[feat + ["fare_amount"]].corr()
 
-corr = df[feat + ["fare_amount"]].corr()["fare_amount"]
-
-print("📊 CORRELATION WITH FARE:\n", corr, "\n")
+sns.heatmap(corr, annot=True, cmap='coolwarm')
+plt.title("Feature Correlation Heatmap")
+plt.show()
 
 
 # --- 4) Split data ---
