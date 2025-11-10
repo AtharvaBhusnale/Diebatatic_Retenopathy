@@ -1,71 +1,77 @@
-import java.util.*;
+import java.util.PriorityQueue;
 
-class Node {
+/* Time complexity:O(nlog n)  Space complexity:O(N) */
+
+class Node implements Comparable<Node> {
 
     char ch;
     int freq;
     Node left, right;
 
-    Node(char ch, int freq) {
+    public Node(char ch, int freq) {
         this.ch = ch;
         this.freq = freq;
+        this.left = null;
+        this.right = null;
     }
 
-    Node(int freq, Node left, Node right) {
-        this.ch = '\0'; // internal node
-        this.freq = freq;
-        this.left = left;
-        this.right = right;
+    // For priority queue sorting (ascending order of frequency)
+    public int compareTo(Node other) {
+        return this.freq - other.freq;
     }
 }
 
 public class HuffmanEncoding {
 
-    // Generate Huffman codes
-    static void getCodes(Node root, String code, Map<Character, String> map) {
+    // Recursive function to print Huffman codes
+    static void printHuffmanCodes(Node root, String code) {
         if (root == null) return;
 
-        if (root.left == null && root.right == null) {
-            map.put(root.ch, code);
+        // If it's a leaf node → print the character and its code
+        if (
+            root.left == null &&
+            root.right == null &&
+            Character.isLetter(root.ch)
+        ) {
+            System.out.println(root.ch + " : " + code);
             return;
         }
 
-        getCodes(root.left, code + "0", map);
-        getCodes(root.right, code + "1", map);
-    }
-
-    // Build Huffman tree and return codes
-    static Map<Character, String> huffman(char[] chars, int[] freq) {
-        PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> a.freq - b.freq);
-
-        for (int i = 0; i < chars.length; i++) pq.add(
-            new Node(chars[i], freq[i])
-        );
-
-        while (pq.size() > 1) {
-            Node a = pq.poll(),
-                b = pq.poll();
-            pq.add(new Node(a.freq + b.freq, a, b));
-        }
-
-        Node root = pq.poll();
-        Map<Character, String> map = new HashMap<>();
-        getCodes(root, "", map);
-        return map;
+        // Traverse left (append 0) and right (append 1)
+        printHuffmanCodes(root.left, code + "0");
+        printHuffmanCodes(root.right, code + "1");
     }
 
     public static void main(String[] args) {
-        char[] chars = { 'a', 'b', 'c', 'd', 'e', 'f' };
-        int[] freq = { 5, 9, 12, 13, 16, 45 };
+        // ✅ Static Input
+        char[] characters = { 'A', 'B', 'C', 'D', 'E', 'F' };
+        int[] frequency = { 5, 9, 12, 13, 16, 45 };
+        int n = characters.length;
 
-        long s = System.nanoTime();
-        Map<Character, String> codes = huffman(chars, freq);
+        // Step 1: Create a priority queue (min-heap)
+        PriorityQueue<Node> pq = new PriorityQueue<>();
 
+        for (int i = 0; i < n; i++) {
+            pq.add(new Node(characters[i], frequency[i]));
+        }
+
+        // Step 2: Build Huffman Tree
+        while (pq.size() > 1) {
+            // Extract two smallest frequency nodes
+            Node left = pq.poll();
+            Node right = pq.poll();
+
+            // Create new internal node with combined frequency
+            Node newNode = new Node('-', left.freq + right.freq);
+            newNode.left = left;
+            newNode.right = right;
+
+            pq.add(newNode);
+        }
+
+        // Step 3: Print Huffman Codes
+        Node root = pq.peek();
         System.out.println("Huffman Codes:");
-        codes.forEach((k, v) -> System.out.println(k + ": " + v));
-
-        long e = System.nanoTime();
-        System.out.println("Execution Time: " + (e - s) + " ns");
-        System.out.println("Execution Time: " + ((e - s) / 1e6) + " ms");
+        printHuffmanCodes(root, "");
     }
 }
